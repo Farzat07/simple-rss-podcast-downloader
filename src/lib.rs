@@ -1,25 +1,6 @@
 use rss::Channel;
-use std::env;
 use std::fs::File;
 use std::path::PathBuf;
-
-/// Parse CLI arguments and return (feed_url, output_dir)
-pub fn parse_args() -> (String, String) {
-    let mut args: Vec<String> = env::args().collect();
-    if args.len() < 2 {
-        eprintln!("Usage: {} <RSS_FEED_URL> [OUTPUT_DIR]", args[0]);
-        std::process::exit(1);
-    }
-
-    let feed_url = args.remove(1);
-    let output_dir = if args.len() > 1 {
-        args.remove(1)
-    } else {
-        String::from(".")
-    };
-
-    (feed_url, output_dir)
-}
 
 /// Fetch RSS feed content from a URL
 pub fn fetch_feed(url: &str) -> Result<String, reqwest::Error> {
