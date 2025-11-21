@@ -1,4 +1,6 @@
 use std::env;
+use std::fs::File;
+use std::path::PathBuf;
 use rss::Channel;
 
 /// Parse CLI arguments and return (feed_url, output_dir)
@@ -34,4 +36,15 @@ pub fn get_audio_urls(channel: &Channel) -> Vec<&str> {
         }
     }
     audio_urls
+}
+
+/// Download the given audio file to the supplied directory
+pub fn download_file(url: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let mut response = reqwest::blocking::get(url)?;
+    let filename = url.split('/').next_back().unwrap_or("episode.mp3");
+    let mut path = PathBuf::from(output_dir);
+    path.push(filename);
+    let mut file = File::create(path)?;
+    std::io::copy(&mut response, &mut file)?;
+    Ok(())
 }
