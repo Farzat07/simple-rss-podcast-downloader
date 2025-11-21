@@ -1,7 +1,7 @@
+use rss::Channel;
 use std::env;
 use std::fs::File;
 use std::path::PathBuf;
-use rss::Channel;
 
 /// Parse CLI arguments and return (feed_url, output_dir)
 pub fn parse_args() -> (String, String) {
@@ -12,7 +12,11 @@ pub fn parse_args() -> (String, String) {
     }
 
     let feed_url = args.remove(1);
-    let output_dir = if args.len() > 1 { args.remove(1) } else { String::from(".") };
+    let output_dir = if args.len() > 1 {
+        args.remove(1)
+    } else {
+        String::from(".")
+    };
 
     (feed_url, output_dir)
 }
@@ -29,13 +33,12 @@ pub fn parse_feed(xml: &str) -> Result<Channel, rss::Error> {
 
 /// Extract the audio URLs from the given channel
 pub fn get_audio_urls(channel: &Channel) -> Vec<&str> {
-    let mut audio_urls = Vec::new();
-    for item in channel.items() {
-        if let Some(enclosure) = item.enclosure() {
-            audio_urls.push(enclosure.url())
-        }
-    }
-    audio_urls
+    channel
+        .items()
+        .iter()
+        .rev()
+        .filter_map(|item| item.enclosure().map(|e| e.url()))
+        .collect()
 }
 
 /// Download the given audio file to the supplied directory
