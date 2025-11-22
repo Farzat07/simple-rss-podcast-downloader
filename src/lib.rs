@@ -13,19 +13,29 @@ pub fn parse_feed(xml: &str) -> Result<Channel, rss::Error> {
 }
 
 /// Extract the audio URLs from the given channel
-pub fn get_audio_urls(channel: &Channel) -> Vec<&str> {
+pub fn get_audio_urls(channel: &Channel) -> Vec<(usize, &str)> {
     channel
         .items()
         .iter()
         .rev()
-        .filter_map(|item| item.enclosure().map(|e| e.url()))
+        .enumerate()
+        .filter_map(|(i, item)| item.enclosure().map(|e| (i + 1, e.url())))
         .collect()
 }
 
 /// Download the given audio file to the supplied directory
-pub fn download_file(url: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn download_file(
+    url: &str,
+    output_dir: &str,
+    prefix: Option<&str>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut response = reqwest::blocking::get(url)?;
     let filename = url.split('/').next_back().unwrap_or("episode.mp3");
+    let filename = if let Some(p) = prefix {
+        format!("{}-{}", p, filename)
+    } else {
+        filename.to_string()
+    };
     let mut path = PathBuf::from(output_dir);
     path.push(filename);
     let mut file = File::create(path)?;

@@ -18,9 +18,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let xml = fetch_feed(&args.feed_url)?;
     let channel = parse_feed(&xml)?;
-    for url in get_audio_urls(&channel) {
+    let pad = channel.items().len().to_string().len();
+    for (i, url) in get_audio_urls(&channel) {
+        let prefix = if args.numbered {
+            Some(format!("{:0width$}", i, width = pad))
+        } else {
+            None
+        };
         println!("Downloading file: {}", url);
-        download_file(url, &args.output_dir)?;
+        download_file(url, &args.output_dir, prefix.as_deref())?;
     }
 
     Ok(())
