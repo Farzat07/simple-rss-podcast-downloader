@@ -13,14 +13,18 @@ pub fn parse_feed(xml: &str) -> Result<Channel, rss::Error> {
 }
 
 /// Extract the audio URLs from the given channel
-pub fn get_audio_urls(channel: &Channel) -> Vec<(usize, &str)> {
-    channel
-        .items()
-        .iter()
-        .rev()
-        .enumerate()
-        .filter_map(|(i, item)| item.enclosure().map(|e| (i + 1, e.url())))
-        .collect()
+pub fn get_audio_urls(channel: &Channel, newest_first: bool) -> Vec<(usize, &str)> {
+    let iter = channel.items().iter();
+    if newest_first {
+        iter.enumerate()
+            .filter_map(|(i, item)| item.enclosure().map(|e| (i + 1, e.url())))
+            .collect()
+    } else {
+        iter.rev()
+            .enumerate()
+            .filter_map(|(i, item)| item.enclosure().map(|e| (i + 1, e.url())))
+            .collect()
+    }
 }
 
 /// Download the given audio file to the supplied directory
