@@ -1,4 +1,5 @@
 use clap::{Parser, ValueEnum};
+use std::fs::create_dir_all;
 use simple_rss_podcast_downloader::*;
 
 #[derive(ValueEnum, Clone, Debug)]
@@ -26,6 +27,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let xml = fetch_feed(&args.feed_url)?;
     let channel = parse_feed(&xml)?;
+    create_dir_all(&args.output_dir)?;
     let pad = channel.items().len().to_string().len();
     let newest_first = matches!(args.order, Order::Newest);
     for (i, url) in get_audio_urls(&channel, newest_first) {
